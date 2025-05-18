@@ -4,7 +4,7 @@ import DOMPurify from 'dompurify';
 import useChatStore from '../stores/chatStore.js';
 import useChatAPI from '../hooks/useChatAPI.js';
 
-function ChatWindow() {
+function ChatWindow({ onLogout }) {
   const navigate = useNavigate();
   const {
     chatSessions,
@@ -21,9 +21,10 @@ function ChatWindow() {
     syncWithLocalStorage();
   }, [syncWithLocalStorage]);
 
+  // Logout function
   const handleLogout = () => {
-    localStorage.removeItem("session");
-    navigate("/login");
+    onLogout(); // Update auth state in App
+    navigate("/login", { replace: true });
   };
 
   const activeSession = chatSessions.find((session) => session.id === activeSessionId);
@@ -58,7 +59,7 @@ function ChatWindow() {
         </div>
         <button
           onClick={handleLogout}
-          className="p-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition mt-4"
+          className="p-3 bg-red-600 text-white hover:bg-red-700 transition mt-4"
         >
           Logout
         </button>

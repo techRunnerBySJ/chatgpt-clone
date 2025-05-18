@@ -3,7 +3,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { useNavigate, Link } from "react-router-dom";
 
-function Login() {
+function Login({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -26,38 +26,21 @@ function Login() {
       );
 
       setSuccess("Logged in successfully! Redirecting...");
+      onLogin(); // Update authentication state in App.jsx
       setTimeout(() => navigate("/"), 1500); // Redirect to ChatWindow after 1.5 seconds
     } catch (error) {
-        console.error("Login error:", error);
-      
-        const errorCode = error.code;
-        const errorMessage = error.message;
-      
-        if (errorCode === "auth/user-not-found") {
-          setError("No user found with this email. Please create a new account.");
-        } else if (
-          errorCode === "auth/wrong-password" ||
-          errorCode === "auth/invalid-login-credentials" ||
-          errorCode === "auth/invalid-credential" ||
-          errorCode === "auth/invalid-email" ||
-          errorCode === "auth/invalid-password"
-        ) {
-          setError("Invalid login credentials. Please try again.");
-        } else if (errorCode === "auth/too-many-requests") {
-            setError("Too many login attempts. Please try again later.");
-          }
-         else {
-          setError(errorMessage || "An unknown error occurred. Please try again.");
-        }
-      }
+      const errorMessage =
+        error.response?.data?.error?.message || "An error occurred. Please try again.";
+      setError(errorMessage);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-96">
-        <h2 className="text-lg font-semibold text-orange-600 mb-4 text-center">LOGIN</h2>
-        {error && <span className="text-red-500 mb-4 text-sm font-semibold">{error}</span>}
-        {success && <span className="text-green-500 mb-4">{success}</span>}
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+      <div className="bg-gray-800 p-6 rounded-lg">
+        <h2 className="text-lg font-semibold text-orange-300 mb-4">Login</h2>
+        {error && <p className="text-red-500 mb-4">{error}</p>}
+        {success && <p className="text-green-500 mb-4">{success}</p>}
         <input
           type="email"
           placeholder="Email"
