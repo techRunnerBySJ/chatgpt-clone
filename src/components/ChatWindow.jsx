@@ -124,36 +124,36 @@ function ChatWindow({ onLogout }) {
 
         {/* Input Area */}
         <div className="p-4 bg-gradient-to-r from-gray-800 to-gray-900 border-t border-gray-700 flex items-center gap-4 sticky bottom-0">
-          <input
-            type="text"
-            placeholder="Type your message..."
-            className="flex-1 p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && e.target.value.trim()) {
-                sendMessage(e.target.value.trim());
-                e.target.value = "";
-              }
-            }}
-          />
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageUpload}
-            className="hidden"
-            id="imageUpload"
-          />
-          <label
-            htmlFor="imageUpload"
-            className="block w-full cursor-pointer px-4 py-2 text-center text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-md hover:from-blue-600 hover:to-purple-600"
-          >
-            Upload an Image
-          </label>
-
+          <div className="flex items-center flex-1 bg-gray-700 rounded-lg border border-gray-600">
+            <input
+              type="text"
+              placeholder="Type your message..."
+              className="flex-1 p-3 rounded-l-lg bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && e.target.value.trim()) {
+                  sendMessage(e.target.value.trim());
+                  e.target.value = "";
+                }
+              }}
+            />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+              id="imageUpload"
+            />
+            <label
+              htmlFor="imageUpload"
+              className="block px-3 py-2 text-center text-white bg-gradient-to-r from-blue-500 to-purple-500 rounded-r-lg hover:from-blue-600 hover:to-purple-600 cursor-pointer text-sm"
+            >
+              Upload Image
+            </label>
+          </div>
+        
           {imagePreview && (
             <div className="flex flex-col items-start gap-2 mt-4">
-              <p className="text-sm text-gray-400">
-                🖼️ You uploaded this image:
-              </p>
+              <p className="text-sm text-gray-400">🖼️ You uploaded this image:</p>
               <img
                 src={imagePreview}
                 alt="Uploaded Preview"
@@ -161,21 +161,21 @@ function ChatWindow({ onLogout }) {
               />
             </div>
           )}
-
+        
           {/* Conditional rendering for loading message */}
           {loading && imageFile && (
             <div className="mt-2 text-sm text-blue-400 animate-pulse">
               🔍 Analyzing image...
             </div>
           )}
-
+        
           <button
             onClick={async () => {
               const input = document.querySelector('input[type="text"]');
               const text = input.value.trim();
-
+        
               if (!text && !imageFile) return; // Nothing to send
-
+        
               setLoading(true);
               try {
                 await sendMessage({ text, imageFile, imagePreview }); // Pass both text and image
