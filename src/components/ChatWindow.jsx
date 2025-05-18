@@ -68,8 +68,8 @@ function ChatWindow({ onLogout }) {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="p-4 bg-gray-800 border-b border-gray-700 flex justify-between items-center sticky top-0">
-          <h1 className="text-2xl font-bold text-orange-300">ChatGPT Clone</h1>
+        <div className="p-4 bg-gradient-to-r from-purple-800 via-indigo-600 to-blue-500 border-b border-gray-700 flex justify-between items-center sticky top-0">
+          <h1 className="text-2xl font-bold text-white">Chai Bot</h1>
         </div>
 
         {/* Chat Messages */}
@@ -77,23 +77,29 @@ function ChatWindow({ onLogout }) {
           {activeSession?.messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`p-4 rounded-lg ${
+              className={`p-4 rounded-lg shadow-md ${
                 msg.sender === 'user'
-                  ? 'bg-orange-600 text-white ml-auto text-right max-w-sm'
-                  : 'bg-gray-700 text-white mr-auto text-left max-w-xl'
+                  ? 'bg-gradient-to-r from-orange-500 to-yellow-500 text-white ml-auto text-right max-w-sm'
+                  : 'bg-gradient-to-r from-gray-700 to-gray-800 text-white mr-auto text-left max-w-xl'
               }`}
               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.text) }}
             />
           ))}
-          {isTyping && <div className="italic text-gray-400">Bot is typing...</div>}
+                    {isTyping && (
+            <div className="typing-loader">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          )}
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-gray-800 border-t border-gray-700 flex items-center gap-4 sticky bottom-0">
+        <div className="p-4 bg-gradient-to-r from-gray-800 to-gray-900 border-t border-gray-700 flex items-center gap-4 sticky bottom-0">
           <input
             type="text"
             placeholder="Type your message..."
-            className="flex-1 p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="flex-1 p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && e.target.value.trim()) {
                 sendMessage(e.target.value.trim());
@@ -101,6 +107,7 @@ function ChatWindow({ onLogout }) {
               }
             }}
           />
+          
           <button
             onClick={() => {
               const input = document.querySelector('input');
@@ -109,7 +116,7 @@ function ChatWindow({ onLogout }) {
                 input.value = '';
               }
             }}
-            className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition"
           >
             Send
           </button>
