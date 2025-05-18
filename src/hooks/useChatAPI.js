@@ -32,7 +32,7 @@ function useChatAPI(addMessageToActiveChat) {
       console.error('Error sending message:', error);
       addMessageToActiveChat({
         sender: 'bot',
-        text: '❌ An error occurred. Please try again later.',
+        text: 'An error occurred. Please try again later.',
       });
     } finally {
       setIsTyping(false);
