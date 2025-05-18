@@ -1,99 +1,118 @@
-import React, { useState, useEffect } from 'react';
-import { sendMessageToGemini } from '../services/geminiService';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import DOMPurify from 'dompurify';
+import useChatStore from '../stores/chatStore.js';
+import useChatAPI from '../hooks/useChatAPI.js';
+
 function ChatWindow() {
-  const [messages, setMessages] = useState([]);
-  const [isTyping, setIsTyping] = useState(false); // State for "typing..." loader
+  const navigate = useNavigate();
+  const {
+    chatSessions,
+    activeSessionId,
+    setActiveSessionId,
+    addNewChat,
+    addMessageToActiveChat,
+    syncWithLocalStorage,
+  } = useChatStore();
 
-  // Load chat history from localStorage when the component mounts
+  const { sendMessage, isTyping } = useChatAPI(addMessageToActiveChat);
+
   useEffect(() => {
-    const savedMessages = JSON.parse(localStorage.getItem('chatHistory'));
-    if (savedMessages) {
-      setMessages(savedMessages);
-    }
-  }, []);
+    syncWithLocalStorage();
+  }, [syncWithLocalStorage]);
 
-  // Save chat history to localStorage whenever messages change
-  useEffect(() => {
-    localStorage.setItem('chatHistory', JSON.stringify(messages));
-  }, [messages]);
-
-  const handleSend = async (text) => {
-    // Show user message
-    const userMessage = { sender: 'user', text };
-    setMessages([...messages, userMessage]);
-
-    // Show "typing..." loader
-    setIsTyping(true);
-
-    // Fetch bot response from Google Gemini
-    const data = await sendMessageToGemini(text);
-
-    // Hide "typing..." loader
-    setIsTyping(false);
-
-    // If the response contains valid text, show bot message
-    if (data) {
-      const botMessage = {
-        sender: 'bot',
-        text: formatBotResponse(data), // Format the bot's response
-      };
-      setMessages((prev) => [...prev, botMessage]);
-    } else {
-      const errorMessage = { sender: 'bot', text: 'Sorry, something went wrong. Please try again later.' };
-      setMessages((prev) => [...prev, errorMessage]);
-    }
+  const handleLogout = () => {
+    localStorage.removeItem("session");
+    navigate("/login");
   };
 
-  // Function to format the bot's response dynamically
-  const formatBotResponse = (response) => {
-    const lines = response.split('\n');
-    return lines
-      .map((line) => {
-        if (line.startsWith('# ')) {
-          return `<h3>${line.slice(2)}</h3>`; // Convert lines starting with "# " to <h3>
-        } else if (line.startsWith('- ')) {
-          return `<li>${line.slice(2)}</li>`; // Convert lines starting with "- " to <li>
-        } else {
-          return `<p>${line}</p>`; // Default to <p> for other lines
-        }
-      })
-      .join('');
-  };
+  const activeSession = chatSessions.find((session) => session.id === activeSessionId);
 
   return (
-    <div className="chat-window">
-      <div className="messages">
-        {messages.map((msg, idx) => (
-          <div
-            key={idx}
-            className={`message ${msg.sender}`}
-            dangerouslySetInnerHTML={{ __html: msg.text }} // Render structured HTML
-          />
-        ))}
-        {isTyping && <div className="typing-indicator">Bot is typing...</div>} {/* Show typing indicator */}
-      </div>
-      <div className="input-box">
-        <input
-          type="text"
-          placeholder="Type your message..."
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && e.target.value.trim()) {
-              handleSend(e.target.value.trim());
-              e.target.value = '';
-            }
-          }}
-        />
+    <div className="min-h-screen bg-gray-900 text-white flex">
+      {/* Sidenav */}
+      <div className="w-72 bg-gray-800 border-r border-gray-600 h-screen flex flex-col sticky top-0">
+        <div className="p-4 border-b border-gray-600 flex justify-between items-center">
+          <h2 className="text-lg font-semibold text-orange-300">Chats</h2>
+          <button
+            onClick={addNewChat}
+            className="px-3 py-1 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition text-sm"
+          >
+            New
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          {chatSessions.map((session) => (
+            <div
+              key={session.id}
+              onClick={() => setActiveSessionId(session.id)}
+              className={`p-3 cursor-pointer ${
+                session.id === activeSessionId
+                  ? 'bg-orange-600 text-white'
+                  : 'bg-gray-700 text-gray-300'
+              } hover:bg-orange-500 transition border-b border-gray-600`}
+            >
+              {session.name}
+            </div>
+          ))}
+        </div>
         <button
-          onClick={() => {
-            const input = document.querySelector('.input-box input');
-            if (input.value.trim()) {
-              handleSend(input.value.trim());
-              input.value = '';
-            }
-          }}
+          onClick={handleLogout}
+          className="p-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition mt-4"
         >
-          Send
+          Logout
         </button>
+      </div>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {/* Header */}
+        <div className="p-4 bg-gray-800 border-b border-gray-700 flex justify-between items-center sticky top-0">
+          <h1 className="text-2xl font-bold text-orange-300">ChatGPT Clone</h1>
+        </div>
+
+        {/* Chat Messages */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-900">
+          {activeSession?.messages.map((msg, idx) => (
+            <div
+              key={idx}
+              className={`p-4 rounded-lg ${
+                msg.sender === 'user'
+                  ? 'bg-orange-600 text-white ml-auto text-right max-w-sm'
+                  : 'bg-gray-700 text-white mr-auto text-left max-w-xl'
+              }`}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.text) }}
+            />
+          ))}
+          {isTyping && <div className="italic text-gray-400">Bot is typing...</div>}
+        </div>
+
+        {/* Input Area */}
+        <div className="p-4 bg-gray-800 border-t border-gray-700 flex items-center gap-4 sticky bottom-0">
+          <input
+            type="text"
+            placeholder="Type your message..."
+            className="flex-1 p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-orange-500"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && e.target.value.trim()) {
+                sendMessage(e.target.value.trim());
+                e.target.value = '';
+              }
+            }}
+          />
+          <button
+            onClick={() => {
+              const input = document.querySelector('input');
+              if (input.value.trim()) {
+                sendMessage(input.value.trim());
+                input.value = '';
+              }
+            }}
+            className="px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition"
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   );
