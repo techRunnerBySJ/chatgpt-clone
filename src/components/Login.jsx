@@ -26,7 +26,7 @@ function Login({ onLogin }) {
 
       setSuccess("Logged in successfully! Redirecting...");
       onLogin();
-      setTimeout(() => navigate("/"), 1500);
+      setTimeout(() => navigate("/chat"), 1500);
     } catch (error) {
       const errorMessage =
         error.response?.data?.error?.message || "An error occurred. Please try again.";

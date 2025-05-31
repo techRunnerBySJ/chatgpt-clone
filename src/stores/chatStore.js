@@ -1,14 +1,20 @@
 import { create } from 'zustand';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { auth } from '../firebaseConfig';
+
+const getUserStorageKey = (key) => {
+  const user = auth.currentUser;
+  return user ? `${user.uid}_${key}` : key;
+};
 
 const useChatStore = create((set, get) => ({
-  chatSessions: JSON.parse(localStorage.getItem('chatSessions')) || [
+  chatSessions: JSON.parse(localStorage.getItem(getUserStorageKey('chatSessions'))) || [
     { id: 1, name: 'New Chat', messages: [] },
   ],
-  activeSessionId: JSON.parse(localStorage.getItem('activeSessionId')) || 1,
+  activeSessionId: JSON.parse(localStorage.getItem(getUserStorageKey('activeSessionId'))) || 1,
 
   setActiveSessionId: (id) => {
-    localStorage.setItem('activeSessionId', JSON.stringify(id));
+    localStorage.setItem(getUserStorageKey('activeSessionId'), JSON.stringify(id));
     set({ activeSessionId: id });
   },
 
@@ -17,8 +23,8 @@ const useChatStore = create((set, get) => ({
     const newChatId = chatSessions.length + 1;
     const newChat = { id: newChatId, name: 'New Chat', messages: [] };
     const updatedSessions = [...chatSessions, newChat];
-    localStorage.setItem('chatSessions', JSON.stringify(updatedSessions));
-    localStorage.setItem('activeSessionId', JSON.stringify(newChatId));
+    localStorage.setItem(getUserStorageKey('chatSessions'), JSON.stringify(updatedSessions));
+    localStorage.setItem(getUserStorageKey('activeSessionId'), JSON.stringify(newChatId));
     set({ chatSessions: updatedSessions, activeSessionId: newChatId });
   },
 
@@ -27,7 +33,7 @@ const useChatStore = create((set, get) => ({
     const updatedSessions = chatSessions.map((session) =>
       session.id === sessionId ? { ...session, name } : session
     );
-    localStorage.setItem('chatSessions', JSON.stringify(updatedSessions));
+    localStorage.setItem(getUserStorageKey('chatSessions'), JSON.stringify(updatedSessions));
     set({ chatSessions: updatedSessions });
   },
 
@@ -46,15 +52,15 @@ const useChatStore = create((set, get) => ({
       }
       return session;
     });
-    localStorage.setItem('chatSessions', JSON.stringify(updatedSessions));
+    localStorage.setItem(getUserStorageKey('chatSessions'), JSON.stringify(updatedSessions));
     set({ chatSessions: updatedSessions });
   },
 
   syncWithLocalStorage: () => {
-    const savedSessions = JSON.parse(localStorage.getItem('chatSessions')) || [
+    const savedSessions = JSON.parse(localStorage.getItem(getUserStorageKey('chatSessions'))) || [
       { id: 1, name: 'New Chat', messages: [] },
     ];
-    const savedActiveSessionId = JSON.parse(localStorage.getItem('activeSessionId')) || savedSessions[0]?.id || 1;
+    const savedActiveSessionId = JSON.parse(localStorage.getItem(getUserStorageKey('activeSessionId'))) || savedSessions[0]?.id || 1;
     set({
       chatSessions: savedSessions,
       activeSessionId: savedActiveSessionId,
@@ -69,9 +75,9 @@ export const useChatStoreWithQuery = () => {
 
   // Query for chat sessions
   const { data: chatSessions = store.chatSessions } = useQuery({
-    queryKey: ['chatSessions'],
+    queryKey: ['chatSessions', auth.currentUser?.uid],
     queryFn: () => {
-      const savedSessions = JSON.parse(localStorage.getItem('chatSessions')) || [
+      const savedSessions = JSON.parse(localStorage.getItem(getUserStorageKey('chatSessions'))) || [
         { id: 1, name: 'New Chat', messages: [] },
       ];
       return savedSessions;
@@ -85,12 +91,12 @@ export const useChatStoreWithQuery = () => {
       const newChatId = chatSessions.length + 1;
       const newChat = { id: newChatId, name: 'New Chat', messages: [] };
       const updatedSessions = [...chatSessions, newChat];
-      localStorage.setItem('chatSessions', JSON.stringify(updatedSessions));
-      localStorage.setItem('activeSessionId', JSON.stringify(newChatId));
+      localStorage.setItem(getUserStorageKey('chatSessions'), JSON.stringify(updatedSessions));
+      localStorage.setItem(getUserStorageKey('activeSessionId'), JSON.stringify(newChatId));
       return { newChat, updatedSessions };
     },
     onSuccess: ({ newChat, updatedSessions }) => {
-      queryClient.setQueryData(['chatSessions'], updatedSessions);
+      queryClient.setQueryData(['chatSessions', auth.currentUser?.uid], updatedSessions);
       store.setActiveSessionId(newChat.id);
     },
   });
@@ -109,11 +115,11 @@ export const useChatStoreWithQuery = () => {
         }
         return session;
       });
-      localStorage.setItem('chatSessions', JSON.stringify(updatedSessions));
+      localStorage.setItem(getUserStorageKey('chatSessions'), JSON.stringify(updatedSessions));
       return updatedSessions;
     },
     onSuccess: (updatedSessions) => {
-      queryClient.setQueryData(['chatSessions'], updatedSessions);
+      queryClient.setQueryData(['chatSessions', auth.currentUser?.uid], updatedSessions);
     },
   });
 

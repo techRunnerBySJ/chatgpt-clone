@@ -26,7 +26,7 @@ function Signup({ onSignup }) {
 
       setSuccess("Signup successful! Redirecting...");
       onSignup();
-      setTimeout(() => navigate("/"), 1500);
+      setTimeout(() => navigate("/chat"), 1500);
     } catch (error) {
       const errorMessage =
         error.response?.data?.error?.message || "An error occurred. Please try again.";
