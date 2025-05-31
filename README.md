@@ -1,12 +1,53 @@
-# React + Vite
+# ChaiBot - ChatGPT Clone
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern web app inspired by ChatGPT, built with React, Vite, Firebase Authentication, and Tailwind CSS. Users can sign up, log in, and chat in a beautiful, responsive interface.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Landing Page:** Modern, minimal design with a glowing effect and easy navigation to Sign In and Sign Up.
+- **Authentication:** Secure sign up and login using Firebase Authentication.
+- **Chat Window:** Responsive chat interface with sidebar, glowing accents, and support for text and image messages.
+- **Protected Routes:** Only authenticated users can access the chat window.
+- **Modern UI:** Built with Tailwind CSS for a sleek, dark-themed look.
 
-## Expanding the ESLint configuration
+## Getting Started
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 1. Clone the repository
+```bash
+git clone <your-repo-url>
+cd chatgpt-clone
+```
+
+### 2. Install dependencies
+```bash
+npm install
+```
+
+### 3. Configure Firebase
+- Create a Firebase project at [Firebase Console](https://console.firebase.google.com/).
+- Enable Email/Password authentication.
+- Copy your Firebase config and replace it in `src/firebaseConfig.js`.
+
+### 4. Run the app
+```bash
+npm run dev
+```
+
+Visit [http://localhost:5173](http://localhost:5173) to view the app.
+
+## Usage
+- **Landing Page:** Choose Sign In or Sign Up to get started.
+- **Sign Up:** Create a new account with your email and password.
+- **Sign In:** Log in with your credentials.
+- **Chat:** Start chatting! You can send text and images.
+- **Logout:** Use the profile menu in the chat window to log out.
+
+## Tech Stack
+- [React](https://react.dev/)
+- [Vite](https://vitejs.dev/)
+- [Firebase Authentication](https://firebase.google.com/docs/auth)
+- [Tailwind CSS](https://tailwindcss.com/)
+
+---
+
+Feel free to customize and extend this project!

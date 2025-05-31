@@ -1,5 +1,5 @@
 export const sendMessageToGemini = async (userInput) => {
-    const API_KEY = 'AIzaSyCBsOxCxvZgWgQqGm1_2UIO-krjTFWLaS4';  // Replace this with your actual API Key
+    const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
   
     const requestData = {
@@ -34,7 +34,7 @@ export const sendMessageToGemini = async (userInput) => {
   };
   
   export const sendImageToGemini = async (imageFile) => {
-    const API_KEY = 'AIzaSyCBsOxCxvZgWgQqGm1_2UIO-krjTFWLaS4';
+    const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
   
     return new Promise((resolve, reject) => {
