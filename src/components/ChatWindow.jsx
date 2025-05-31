@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
-import useChatStore from "../stores/chatStore.js";
+import { useChatStoreWithQuery } from "../stores/chatStore.js";
 import useChatAPI from "../hooks/useChatAPI.js";
 
 // ...existing code...
@@ -14,7 +14,6 @@ function ChatWindow({ onLogout }) {
   const [showUploadDropdown, setShowUploadDropdown] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
-  const [loading, setLoading] = useState(false);
 
   const {
     chatSessions,
@@ -22,18 +21,13 @@ function ChatWindow({ onLogout }) {
     setActiveSessionId,
     addNewChat,
     addMessageToActiveChat,
-    syncWithLocalStorage,
-  } = useChatStore();
+  } = useChatStoreWithQuery();
 
   const { sendMessage, isTyping } = useChatAPI(addMessageToActiveChat);
 
   const activeSession = chatSessions.find(
     (session) => session.id === activeSessionId
   );
-
-  useEffect(() => {
-    syncWithLocalStorage();
-  }, [syncWithLocalStorage]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -172,7 +166,7 @@ function ChatWindow({ onLogout }) {
               }`}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && e.target.value.trim()) {
-                  sendMessage(e.target.value.trim());
+                  sendMessage({ text: e.target.value.trim(), imageFile, imagePreview });
                   e.target.value = "";
                 }
               }}
@@ -228,13 +222,11 @@ function ChatWindow({ onLogout }) {
   
               if (!text && !imageFile) return;
   
-              setLoading(true);
               try {
                 await sendMessage({ text, imageFile, imagePreview });
               } catch (error) {
                 console.error("Error sending message:", error);
               } finally {
-                setLoading(false);
                 setImageFile(null);
                 setImagePreview(null);
                 input.value = "";

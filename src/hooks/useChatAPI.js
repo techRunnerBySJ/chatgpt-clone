@@ -1,42 +1,53 @@
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { sendImageToGemini, sendMessageToGemini } from '../services/geminiService';
 
 function useChatAPI(addMessageToActiveChat) {
   const [isTyping, setIsTyping] = useState(false);
+  const queryClient = useQueryClient();
 
-  const sendMessage = async ({ text, imageFile, imagePreview }) => {
-    const isImage = !!imageFile;
-    const userMessage = {
-      sender: 'user',
-      text: text || (isImage ? '📷 Sent an image.' : ''),
-      image: isImage ? imagePreview : null,
-    };
-  
-    addMessageToActiveChat(userMessage);
-    setIsTyping(true);
-  
-    try {
-      let data;
-      if (isImage) {
-        data = await sendImageToGemini(imageFile);
+  const sendMessageMutation = useMutation({
+    mutationFn: async ({ text, imageFile }) => {
+      if (imageFile) {
+        return await sendImageToGemini(imageFile);
       } else if (text) {
-        data = await sendMessageToGemini(text);
+        return await sendMessageToGemini(text);
       }
-  
-      const botMessage = data
-        ? { sender: 'bot', text: formatBotResponse(data) }
-        : { sender: 'bot', text: 'Sorry, something went wrong. Please try again later.' };
-  
+      throw new Error('No message content provided');
+    },
+    onMutate: async ({ text, imageFile, imagePreview }) => {
+      // Optimistically update the UI
+      const userMessage = {
+        sender: 'user',
+        text: text || (imageFile ? '📷 Sent an image.' : ''),
+        image: imageFile ? imagePreview : null,
+      };
+      addMessageToActiveChat(userMessage);
+      setIsTyping(true);
+    },
+    onSuccess: (data) => {
+      const botMessage = {
+        sender: 'bot',
+        text: formatBotResponse(data)
+      };
       addMessageToActiveChat(botMessage);
-    } catch (error) {
+      // Invalidate and refetch any related queries
+      queryClient.invalidateQueries({ queryKey: ['chat'] });
+    },
+    onError: (error) => {
       console.error('Error sending message:', error);
       addMessageToActiveChat({
         sender: 'bot',
         text: 'An error occurred. Please try again later.',
       });
-    } finally {
+    },
+    onSettled: () => {
       setIsTyping(false);
-    }
+    },
+  });
+
+  const sendMessage = async ({ text, imageFile, imagePreview }) => {
+    sendMessageMutation.mutate({ text, imageFile, imagePreview });
   };
 
   const formatBotResponse = (response) => {
