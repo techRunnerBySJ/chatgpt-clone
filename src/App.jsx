@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import ChatWindow from "./components/ChatWindow";
 import Login from "./components/Login";
 import Signup from "./components/SignUp";
+import Landing from "./components/Landing";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -36,21 +37,12 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route
-          path="/"
-          element={
-            isAuthenticated ? (
-              <ChatWindow onLogout={handleLogout} />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
-        />
+        <Route path="/" element={<Landing />} />
         <Route
           path="/login"
           element={
             isAuthenticated ? (
-              <Navigate to="/" />
+              <Navigate to="/chat" />
             ) : (
               <Login onLogin={checkAuthentication} />
             )
@@ -60,9 +52,19 @@ function App() {
           path="/signup"
           element={
             isAuthenticated ? (
-              <Navigate to="/" />
+              <Navigate to="/chat" />
             ) : (
               <Signup onSignup={checkAuthentication} />
+            )
+          }
+        />
+        <Route
+          path="/chat"
+          element={
+            isAuthenticated ? (
+              <ChatWindow onLogout={handleLogout} />
+            ) : (
+              <Navigate to="/login" />
             )
           }
         />
